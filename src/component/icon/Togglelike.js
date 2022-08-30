@@ -7,17 +7,26 @@ import {
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../../context/authContext";
 import { db } from "../../firebase-data/firebaseConfig";
 
 const Togglelike = ({ title = "" }) => {
+  const navigate = useNavigate();
   const [like, setLike] = useState(false);
   const { userInfo } = useAuth();
   const [numberOfLikes, setNumberOflike] = useState(0);
   const [emailUserLike, setEmailUserLike] = useState([]);
   const [postId, setPostId] = useState("");
   const handleToogle = async () => {
-    if (!userInfo.email) return;
+    if (!userInfo) {
+      navigate("/sign-in");
+      toast.error("Please login to use this feature", {
+        pauseOnHover: false,
+      });
+      return;
+    }
     const docRef = doc(db, "posts", postId);
     const filter = emailUserLike.filter((item) => item !== userInfo?.email);
     if (!like) {
@@ -35,7 +44,7 @@ const Togglelike = ({ title = "" }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!userInfo.email) return;
+      if (!userInfo) return;
       const colRef = collection(db, "posts");
       const queries = query(colRef, where("title", "==", title));
       onSnapshot(queries, (querySnapshot) => {
@@ -43,12 +52,13 @@ const Togglelike = ({ title = "" }) => {
           setPostId(doc?.id);
           setNumberOflike(doc?.data()?.likes);
           setEmailUserLike([...doc.data().peopleLike] || []);
-          setLike(doc?.data()?.peopleLike.includes(userInfo.email));
+          setLike(doc?.data()?.peopleLike.includes(userInfo?.email || ""));
         });
       });
     };
     fetchData();
-  }, [title, userInfo.email]);
+  }, [title, userInfo]);
+
   return (
     <div onClick={handleToogle} className="cursor-pointer">
       {like ? (

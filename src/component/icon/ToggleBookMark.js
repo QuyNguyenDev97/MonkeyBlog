@@ -7,15 +7,24 @@ import {
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/authContext";
 import { db } from "../../firebase-data/firebaseConfig";
 
 const ToggleBookMark = ({ title = "", className = "" }) => {
   const { userInfo } = useAuth();
+  const navigate = useNavigate();
   const [hasBookMark, setHasBookMark] = useState(false);
   const [bookMarkList, setBookMarkList] = useState([]);
   const handleAddBookMark = async () => {
+    if (!userInfo) {
+      navigate("/sign-in");
+      toast.error("Please login to use this feature", {
+        pauseOnHover: false,
+      });
+      return;
+    }
     const docRef = doc(db, "users", userInfo?.uid);
     const filter = bookMarkList.filter((item) => item !== title);
     if (!hasBookMark) {
