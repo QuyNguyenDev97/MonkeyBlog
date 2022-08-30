@@ -17,8 +17,9 @@ const Togglelike = ({ title = "" }) => {
   const [emailUserLike, setEmailUserLike] = useState([]);
   const [postId, setPostId] = useState("");
   const handleToogle = async () => {
+    if (!userInfo.email) return;
     const docRef = doc(db, "posts", postId);
-    const filter = emailUserLike.filter((item) => item !== userInfo.email);
+    const filter = emailUserLike.filter((item) => item !== userInfo?.email);
     if (!like) {
       await updateDoc(docRef, {
         likes: numberOfLikes + 1,
@@ -34,6 +35,7 @@ const Togglelike = ({ title = "" }) => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!userInfo.email) return;
       const colRef = collection(db, "posts");
       const queries = query(colRef, where("title", "==", title));
       onSnapshot(queries, (querySnapshot) => {
